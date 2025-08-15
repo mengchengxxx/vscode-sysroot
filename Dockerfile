@@ -1,7 +1,10 @@
 FROM ubuntu:latest AS crosstool
 
+RUN sed -i 's#http://archive.ubuntu.com/#http://mirrors.tuna.tsinghua.edu.cn/#' /etc/apt/sources.list
 RUN apt-get update
-RUN apt-get install -y gcc g++ gperf bison flex texinfo help2man make libncurses5-dev \
+RUN apt-get install -y gcc g++
+
+RUN apt-get install -y gperf bison flex texinfo help2man make libncurses5-dev \
 python3-dev autoconf automake libtool libtool-bin gawk wget bzip2 xz-utils unzip \
 patch rsync meson ninja-build
 
@@ -17,6 +20,6 @@ WORKDIR /src
 FROM crosstool AS sysroot
 
 COPY x86_64-gcc-8.5.0-glibc-2.28.config /src/.config
-RUN ct-ng build
+RUN ct-ng build V=1
 RUN wget -O - https://github.com/NixOS/patchelf/releases/download/0.18.0/patchelf-0.18.0-x86_64.tar.gz | tar zxv -C x86_64-linux-gnu/x86_64-linux-gnu/sysroot/usr ./bin/patchelf
 RUN tar zcf vscode-sysroot-x86_64-linux-gnu.tgz -C x86_64-linux-gnu/x86_64-linux-gnu --exclude '*.a' sysroot
